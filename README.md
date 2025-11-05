@@ -1,2 +1,2 @@
 # TrenOS
-Give your PC on Steroids!
+Get your PC on Steroids!
