@@ -183,7 +183,7 @@ function Start-TrenOS {
         return
     }
     
-    $result = Run-TrenScript -Path "Modules\OptimizationManager.ps1" -Config $config
+    $result = Run-TrenScript -Path "/Modules/OptimizationManager.ps1" -Config $config
 
     if ($result) {
         Write-TrenLog "Optimization completed successfully"
