@@ -1,10 +1,14 @@
 # TrenOS - Loader
 # @evvskx
 
+$global:tempDir = Join-Path $env:TEMP "TrenOS\Dependencies"
+
+if (-not (Test-Path $tempDir)) {
+    New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+}
+
 $global:TrenOS = @{
     GithubRepoBaseUrl = "https://raw.githubusercontent.com/evvskx/TrenOS/refs/heads/main/src"
-    Version = "v1.0.0-beta"
-    Modules = @{}
 }
 
 function global:Write-TrenLog {

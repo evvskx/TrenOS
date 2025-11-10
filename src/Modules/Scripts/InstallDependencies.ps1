@@ -8,10 +8,6 @@ function InstallDependencies {
     }
 
     try {
-        $tempDir = Join-Path $env:TEMP "TrenOS\Dependencies"
-        if (-not (Test-Path $tempDir)) {
-            New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
-        }
 
         $timeouts = "--connect-timeout", "30", "--max-time", "300"
 
@@ -58,7 +54,9 @@ function InstallDependencies {
 
     } catch {
         Write-TrenLog "Failed to install VC Redistributables: $($_.Exception.Message)"
+        return 0
     }
+    return 1
 }
 
 return (InstallDependencies)

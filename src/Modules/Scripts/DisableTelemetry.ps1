@@ -65,7 +65,9 @@ function DisableTelemetry {
                 New-Item -Path $tweak.Path -Force | Out-Null
             }
             Set-ItemProperty -Path $tweak.Path -Name $tweak.Name -Value $tweak.Value -Type $tweak.Type -ErrorAction SilentlyContinue
-        } catch {}
+        } catch {
+            
+        }
     }
 
     bcdedit /set `{current`} bootmenupolicy Legacy | Out-Null
@@ -105,6 +107,11 @@ function DisableTelemetry {
         if (Get-Service -Name "dmwappushsvc" -ErrorAction SilentlyContinue) {
             Stop-Service -Name "dmwappushsvc" -ErrorAction SilentlyContinue
             Set-Service -Name "dmwappushsvc" -StartupType Disabled
+        }
+        New-Item -Path 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Feeds' -Force | Out-Null
+        Set-ItemProperty -Path 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Feeds' -Name 'EnableFeeds' -Value 0 -Type DWord -Force
+        if (Test-Path 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\location') {
+            Set-ItemProperty -Path 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\location' -Name 'Value' -Value 'Deny'
         }
     } catch {}
 
