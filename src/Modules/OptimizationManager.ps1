@@ -16,6 +16,7 @@ $tweaks = ,@(
     @("Tweaking Services", "Modules/Scripts/TweakServices.ps1")
     @("Uninstalling Bloatware", "Modules/Scripts/UninstallBloatware.ps1")
     @("Applying Optimized Powerplan", "Modules/Scripts/ApplyCustomPowerplan.ps1")
+    @("Optimizing Disk", "Modules/Scripts/OptimizeDisk.ps1")
 )
 
 function Optimize {
