@@ -1,6 +1,7 @@
 <div align="center">
   
 # 💪 TrenOS
+### Get your PC on Steroids
 
 ![Visitors](https://visitor-badge.laobi.icu/badge?page_id=evvskx.TrenOS)
 ![Version](https://img.shields.io/badge/version-beta-orange)
