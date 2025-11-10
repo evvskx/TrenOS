@@ -176,7 +176,7 @@ function Start-TrenOS {
         return
     }
     
-    $config = Run-TrenScript -Path "Modules\ConfigManager.ps1"
+    $config = Run-TrenScript -Path "/Modules/ConfigManager.ps1"
     
     if (-not $config) {
         Write-TrenLog "ConfigManager.ps1 did not return a valid configuration"
