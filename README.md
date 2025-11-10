@@ -34,6 +34,6 @@ TrenOS optimizes your system:
 ### Try out TrenOS!
 
 Open PowerShell, and type: <br>
-<code>irm https://raw.githubusercontent.com/evvskx/TrenOS/refs/heads/main/src/install.ps1 | iex</code>
+<code>irm https://evvsk.it/trenos | iex</code>
 
 </div>
