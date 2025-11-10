@@ -68,9 +68,12 @@ function global:Run-TrenScript {
         [object]$Config 
     )
     
-    $isRemoteExecution = $MyInvocation.Line -like "*irm*" -or $MyInvocation.Line -like "*Invoke-WebRequest*"
+    $isRemoteExecution = ($null -eq $PSCommandPath) -or 
+                        ($MyInvocation.PSCommandPath -eq $null) -or
+                        ($MyInvocation.Line -like "*irm*" -or $MyInvocation.Line -like "*Invoke-WebRequest*" -or $MyInvocation.Line -like "*-Command*")
     
     if ($isRemoteExecution) {
+        Write-TrenLog "Loading remote script: $Path"
         $url = $TrenOS.GithubRepoBaseUrl + $Path
         try {
             $scriptContent = (Invoke-WebRequest -Uri $url -UseBasicParsing).Content
@@ -85,10 +88,12 @@ function global:Run-TrenScript {
         catch {
             Write-TrenLog "Failed to load from remote: $Path"
             Write-TrenLog "Error: $($_.Exception.Message)"
+            Write-TrenLog "URL attempted: $url"
             return $null
         }
     }
     else {
+        Write-TrenLog "Loading local script: $Path"
         $localPaths = @()
         
         if ($PSScriptRoot) {
@@ -105,12 +110,11 @@ function global:Run-TrenScript {
         
         $foundPath = $null
         foreach ($localPath in $localPaths) {
-                if (Test-Path $localPath) {
-                    $foundPath = $localPath
-                    break
-                }
+            if (Test-Path $localPath) {
+                $foundPath = $localPath
+                break
             }
-
+        }
         
         if ($foundPath) {
             try {
@@ -130,8 +134,24 @@ function global:Run-TrenScript {
             }
         }
         else {
-            Write-TrenLog "Script not found: $Path"
-            return $null
+            Write-TrenLog "Script not found locally, trying remote: $Path"
+            
+            $url = $TrenOS.GithubRepoBaseUrl + $Path
+            try {
+                $scriptContent = (Invoke-WebRequest -Uri $url -UseBasicParsing).Content
+                $scriptBlock = [scriptblock]::Create($scriptContent)
+                
+                if ($Config) {  
+                    return & $scriptBlock -config $Config
+                } else {
+                    return & $scriptBlock
+                }
+            }
+            catch {
+                Write-TrenLog "Failed to load from remote fallback: $Path"
+                Write-TrenLog "Error: $($_.Exception.Message)"
+                return $null
+            }
         }
     }
 }
