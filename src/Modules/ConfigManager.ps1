@@ -17,12 +17,6 @@ function Get-UserChoice {
     Write-Host "    $([char]27)[32m- $([char]27)[33m$( (Get-Date).ToString('HH:mm:ss') )$([char]27)[36m ::$([char]27)[0m Select option (1-$($Options.Count)): " -NoNewline
     $choice = Read-Host
     
-    $userChoice = if ([string]::IsNullOrWhiteSpace($choice)) { 
-        $DefaultChoice 
-    } else { 
-        $choice 
-    }
-    
     if ([string]::IsNullOrWhiteSpace($choice) -and $DefaultChoice) {
         return $DefaultChoice
     }
@@ -32,8 +26,7 @@ function Get-UserChoice {
         $choice = Read-Host
         $choice = $choice.Trim()
     }
-    
-    Write-TrenLog "User selected: $choice"
+
     return [int]$choice
 }
 
@@ -53,8 +46,6 @@ function Get-YesNoChoice {
     } else { 
         $choice 
     }
-    
-    Write-TrenLog "$Question [$userChoice]"
     
     if ([string]::IsNullOrWhiteSpace($choice)) {
         return $DefaultChoice
@@ -77,7 +68,7 @@ function Show-Menu {
     
     $config = @{}
     
-    $defaultBrowser = "Brave"
+    $defaultBrowser = Run-TrenScript -Path "/Modules/FetchBrowser.ps1"
     $useDefaultBrowser = Get-YesNoChoice -Question "Do you wanna use ${defaultBrowser} as default browser?" -DefaultChoice $true
     
     if (-not $useDefaultBrowser) {
@@ -90,8 +81,6 @@ function Show-Menu {
     }
     
     $config.DisableDefender = Get-YesNoChoice -Question "Disable Windows Defender?" -DefaultChoice $false
-    $config.DisableMitigations = Get-YesNoChoice -Question "Disable CPU security mitigations for better performance?" -DefaultChoice $false
-    
     Write-TrenLog "Configuration completed. Summary:"
     
     foreach ($key in $config.Keys) {
@@ -106,7 +95,6 @@ function Show-Menu {
     $proceed = Get-YesNoChoice -Question "Proceed with these settings?" -DefaultChoice $true
     
     if ($proceed) {
-        Write-TrenLog "Starting optimization with selected configuration..."
         return $config
     } else {
         Write-TrenLog "Configuration cancelled by user."

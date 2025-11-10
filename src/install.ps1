@@ -3,7 +3,7 @@
 
 $global:TrenOS = @{
     GithubRepoBaseUrl = "https://raw.githubusercontent.com/evvskx/TrenOS/refs/heads/main/src"
-    Version = "1.0.0"
+    Version = "v1.0.0-beta"
     Modules = @{}
 }
 
@@ -55,13 +55,13 @@ function Write-TrenLogo {
     Write-Host "`n"
 }
 
-function Run-TrenScript {
+function global:Run-TrenScript {
     param(
         [Parameter(Mandatory=$true)]
         [string]$Path,
         
         [Parameter(Mandatory=$false)]
-        [hashtable]$Parameters = @{}
+        [object]$Config 
     )
     
     $isRemoteExecution = $MyInvocation.Line -like "*irm*" -or $MyInvocation.Line -like "*Invoke-WebRequest*"
@@ -72,15 +72,15 @@ function Run-TrenScript {
             $scriptContent = (Invoke-WebRequest -Uri $url -UseBasicParsing).Content
             $scriptBlock = [scriptblock]::Create($scriptContent)
             
-            if ($Parameters.Count -gt 0) {
-                return & $scriptBlock @Parameters
+            if ($Config) {  
+                return & $scriptBlock -config $Config
             } else {
                 return & $scriptBlock
             }
         }
         catch {
-            Write-Error "$f Failed to load from remote: $Path"
-            Write-Error "$f Error: $($_.Exception.Message)"
+            Write-TrenLog "Failed to load from remote: $Path"
+            Write-TrenLog "Error: $($_.Exception.Message)"
             return $null
         }
     }
@@ -97,36 +97,36 @@ function Run-TrenScript {
         }
         
         $localPaths += Join-Path (Get-Location).Path $Path.TrimStart('/')
-        
         $localPaths += $Path
         
         $foundPath = $null
         foreach ($localPath in $localPaths) {
-            if (Test-Path $localPath) {
-                $foundPath = $localPath
-                break
+                if (Test-Path $localPath) {
+                    $foundPath = $localPath
+                    break
+                }
             }
-        }
+
         
         if ($foundPath) {
             try {
                 $scriptContent = Get-Content -Path $foundPath -Raw -ErrorAction Stop
                 $scriptBlock = [scriptblock]::Create($scriptContent)
                 
-                if ($Parameters.Count -gt 0) {
-                    return & $scriptBlock @Parameters
+                if ($Config) {  
+                    return & $scriptBlock -config $Config
                 } else {
                     return & $scriptBlock
                 }
             }
             catch {
-                Write-Error "$f Failed to load from local: $foundPath"
-                Write-Error "$f Error: $($_.Exception.Message)"
+                Write-TrenLog "Failed to load from local: $foundPath"
+                Write-TrenLog "Error: $($_.Exception.Message)"
                 return $null
             }
         }
         else {
-            $localPaths | ForEach-Object { Write-Host "  - $_" -ForegroundColor Red }
+            Write-TrenLog "Script not found: $Path"
             return $null
         }
     }
@@ -138,7 +138,7 @@ function Initialize-TrenOS {
     $requirements = Run-TrenScript -Path "/Modules/VerifyRequirements.ps1"
     
     if ($requirements -eq $false) {
-        Write-Error "System requirements not met. TrenOS cannot continue."
+        Write-TrenLog "System requirements not met. TrenOS cannot continue."
         return $false
     }
     
@@ -147,15 +147,26 @@ function Initialize-TrenOS {
 
 function Start-TrenOS {
     if (-not (Initialize-TrenOS)) {
-        Write-Host "Press any key to exit..." -ForegroundColor Red
+        Write-TrenLog "Press any key to exit..."
         $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
         return
     }
     
-    $config = Run-TrenScript -Path "/Modules/Menu.ps1"
-    # $optimization = Run-TrenScript -Path "/Modules/Optimizations.ps1"
-}
+    $config = Run-TrenScript -Path "Modules\ConfigManager.ps1"
+    
+    if (-not $config) {
+        Write-TrenLog "ConfigManager.ps1 did not return a valid configuration"
+        return
+    }
+    
+    $result = Run-TrenScript -Path "Modules\OptimizationManager.ps1" -Config $config
 
+    if ($result) {
+        Write-TrenLog "Optimization completed successfully"
+    } else {
+        Write-TrenLog "Optimization failed"
+    }
+}
 if ($MyInvocation.InvocationName -eq '.' -or $MyInvocation.Line -eq '' -or $PSCommandPath) {
     Start-TrenOS
 }
