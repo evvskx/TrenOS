@@ -188,7 +188,7 @@ function Start-TrenOS {
     if ($result) {
         Write-TrenLog "Optimization completed successfully"
 
-        Restart-Computer -Force
+        Restart-Computer -Force -Delay 15
     } else {
         Write-TrenLog "Optimization failed"
     }
