@@ -2,6 +2,7 @@ $tweaks = @(
     @{ Message = "Creating Restore Point"; Script = "Modules/Scripts/CreateSystemRestorePoint.ps1" }
     @{ Message = "Installing Dependencies"; Script = "Modules/Scripts/InstallDependencies.ps1" }
     @{ Message = "Installing Windows Updates"; Script = "Modules/Scripts/InstallWindowsUpdates.ps1" }
+    @{ Message = "Optimizing Disk"; Script = "Modules/Scripts/OptimizeDisk.ps1" }
     @{ Message = "Disabling Telemetry"; Script = "Modules/Scripts/DisableTelemetry.ps1" }
     @{ Message = "Disabling Background Apps"; Script = "Modules/Scripts/DisableBackgroundApps.ps1" }
     @{ Message = "Disabling Visual Effects"; Script = "Modules/Scripts/DisableVisualEffects.ps1" }
@@ -15,13 +16,11 @@ $tweaks = @(
     @{ Message = "Tweaking Services"; Script = "Modules/Scripts/TweakServices.ps1" }
     @{ Message = "Uninstalling Bloatware"; Script = "Modules/Scripts/UninstallBloatware.ps1" }
     @{ Message = "Applying Optimized Powerplan"; Script = "Modules/Scripts/ApplyCustomPowerplan.ps1" }
-    @{ Message = "Optimizing Disk"; Script = "Modules/Scripts/OptimizeDisk.ps1" }
 )
 
 function Optimize {
     param($config)
     
-    Write-TrenLog "Starting optimization process..."
 
     foreach ($tweak in $tweaks) {
         $message = $tweak.Message

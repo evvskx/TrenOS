@@ -26,7 +26,6 @@ TrenOS optimizes your system:
 > [!WARNING]
 >
 > #### TrenOS is currently in Beta
->
 > Use with caution. We are not responsible for any system instability or data loss.
 
 <div align="center">

@@ -31,26 +31,21 @@ function Test-WindowsEdition {
     
     
     if ($isServer) {
-        Write-TrenLog "Unsupported OS: Windows Server edition detected"
         return $false
     }
     
     if ($isEducation -or $isEnterprise) {
-        Write-TrenLog "Unsupported OS: Education or Enterprise edition detected"
         return $false
     }
     
     if (-not $isCorrectVersion) {
-        Write-TrenLog "Unsupported OS: Not Windows 10 or Windows 11"
         return $false
     }
     
     if (-not $isAllowedSKU) {
-        Write-TrenLog "Unsupported OS: Edition not in allowed SKUs"
         return $false
     }
     
-    Write-TrenLog "Windows edition check passed: $caption"
     return $true
 }
 
@@ -62,15 +57,12 @@ function Test-DiskSpace {
         $requiredSpaceGB = 10
         
         if ($freeSpaceGB -ge $requiredSpaceGB) {
-            Write-TrenLog "Disk space check passed: $freeSpaceGB GB free"
             return $true
         } else {
-            Write-TrenLog "Disk space check failed: Only $freeSpaceGB GB free (requires $requiredSpaceGB GB)"
             return $false
         }
     }
     catch {
-        Write-TrenLog "Disk space check failed: Unable to query drive information"
         return $false
     }
 }
@@ -80,10 +72,8 @@ function Test-PowerShellVersion {
     $requiredVersion = [version]"5.1"
     
     if ($currentVersion -ge $requiredVersion) {
-        Write-TrenLog "PowerShell version check passed: $currentVersion"
         return $true
     } else {
-        Write-TrenLog "PowerShell version check failed: $currentVersion (requires $requiredVersion)"
         return $false
     }
 }
@@ -92,16 +82,13 @@ function Test-Architecture {
     $is64Bit = [Environment]::Is64BitOperatingSystem
     
     if ($is64Bit) {
-        Write-TrenLog "Architecture check passed: 64-bit system"
         return $true
     } else {
-        Write-TrenLog "Architecture check failed: 32-bit system not supported"
         return $false
     }
 }
 
 function Invoke-TrenDependenciesCheck {
-    Write-TrenLog "Starting system requirements verification..."
     
     $results = @{}
     $allPassed = $true
@@ -116,10 +103,8 @@ function Invoke-TrenDependenciesCheck {
     
         Write-TrenLog "ERROR: Administrator privileges are required."
         Exit
-    } else {
-        Write-TrenLog "Administrator check passed: Running with elevated privileges"
     }
-    
+
     $results.WindowsEdition = Test-WindowsEdition
     if (-not $results.WindowsEdition) { $allPassed = $false }
     
@@ -132,12 +117,11 @@ function Invoke-TrenDependenciesCheck {
     $results.Architecture = Test-Architecture
     if (-not $results.Architecture) { $allPassed = $false }
     
-    Write-TrenLog "System requirements verification completed:"
     foreach ($check in $results.Keys) {
-        $status = if ($results[$check]) { "PASS" } else { "FAIL" }
-        $color = if ($results[$check]) { "Green" } else { "Red" }
-        Write-Host "                  - $check : " -NoNewline
-        Write-Host $status -ForegroundColor $color
+        $status = if ($results[$check]) { $true } else { $false }
+        if (-not $status) {
+            Write-TrenLog "$check : $status"
+        }
     }
     
     return $allPassed

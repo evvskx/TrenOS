@@ -34,9 +34,7 @@ function global:Write-TrenLog {
     try {
         Add-Content -Path $logFile -Value $logMessage -ErrorAction Stop
     }
-    catch {
-        Write-Warning "Failed to write to log file: $($_.Exception.Message)"
-    }
+    catch {}
 }
 
 function Write-TrenLogo {
@@ -73,10 +71,10 @@ function global:Run-TrenScript {
                         ($MyInvocation.Line -like "*irm*" -or $MyInvocation.Line -like "*Invoke-WebRequest*" -or $MyInvocation.Line -like "*-Command*")
     
     if ($isRemoteExecution) {
-        Write-TrenLog "Loading remote script: $Path"
         $url = $TrenOS.GithubRepoBaseUrl + $Path
         try {
-            $scriptContent = (Invoke-WebRequest -Uri $url -UseBasicParsing).Content
+            $response = Invoke-WebRequest -Uri $url -UseBasicParsing -Headers @{"Cache-Control"="no-cache"}
+            $scriptContent = $response.Content
             $scriptBlock = [scriptblock]::Create($scriptContent)
             
             if ($Config) {  
@@ -88,12 +86,11 @@ function global:Run-TrenScript {
         catch {
             Write-TrenLog "Failed to load from remote: $Path"
             Write-TrenLog "Error: $($_.Exception.Message)"
-            Write-TrenLog "URL attempted: $url"
+            Write-TrenLog "URL: $url"
             return $null
         }
     }
     else {
-        Write-TrenLog "Loading local script: $Path"
         $localPaths = @()
         
         if ($PSScriptRoot) {
@@ -134,8 +131,6 @@ function global:Run-TrenScript {
             }
         }
         else {
-            Write-TrenLog "Script not found locally, trying remote: $Path"
-            
             $url = $TrenOS.GithubRepoBaseUrl + $Path
             try {
                 $scriptContent = (Invoke-WebRequest -Uri $url -UseBasicParsing).Content
@@ -148,7 +143,7 @@ function global:Run-TrenScript {
                 }
             }
             catch {
-                Write-TrenLog "Failed to load from remote fallback: $Path"
+                Write-TrenLog "Failed to load from remote: $Path"
                 Write-TrenLog "Error: $($_.Exception.Message)"
                 return $null
             }
